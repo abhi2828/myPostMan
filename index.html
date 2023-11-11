@@ -20,9 +20,24 @@
             display: flex;
             width: 100%;
         }
-        label{
+        .ApiCall,.myres{
+            width: 50vw;
+        }
+        .ApiCall{
+            padding: 15px;
+        }
+        .ApiCall h2,.myres h2{
+            text-align: center;
+            margin-top: 15px;
+        }
+        .btn {
+            width: 45%;
+        }
+
+        label {
             font-weight: 700;
         }
+
         input {
             height: 50px;
             margin: 10px 0;
@@ -32,10 +47,6 @@
             height: 50px;
             width: 100px;
             margin: 10px 0;
-        }
-
-        #container {
-            width: 80%;
         }
 
         #apiForm {
@@ -50,7 +61,8 @@
         }
 
         input,
-        textarea,select {
+        textarea,
+        select {
             font-size: small !important;
             font-weight: 500;
             width: 100%;
@@ -64,12 +76,36 @@
         }
 
         #response {
-            width: 100%;
-            max-width: 500px;
+            width: 48vw;
             border: 1px solid #ccc;
             padding: 10px;
+            height: 80vh;
+            margin-top: 20px;
+            overflow-y: auto;
+            position: relative;
         }
 
+        .spinner-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none; /* Initially hide the spinner container */
+}
+
+.spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top: 4px solid #3498db;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
     </style>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
@@ -83,10 +119,9 @@
 </head>
 
 <body>
-
     <div class="myContainer">
-        <div id="container">
-            <h1>CORS Tracker</h1>
+        <div class="ApiCall">
+            <h2>CORS Tracker</h2>
 
             <form id="apiForm">
                 <div class="mb-3">
@@ -95,7 +130,6 @@
                 </div>
                 <div class="mb-3">
                     <label for="method">Method:</label>
-                    <br>
                     <select id="method" name="method">
                         <option value="GET">GET</option>
                         <option value="POST">POST</option>
@@ -104,89 +138,60 @@
                 </div>
                 <div class="mb-3">
                     <label for="headers">Headers (JSON):</label>
-                    <textarea id="headers" name="headers" rows="4" cols="50">
-                {
-                    "token": "a20f0890-68b8-46ff-94c7-536ab2e40d07:kAIc3sHjA8dP8Q5UfzbPH1CvcNMg7v",
-                    "customKey": "D2nGfZbPDVjlvJVK3gRyxZ11EiY2PZRGkLBwyHCEs5MUdLddlWaiokReJXGLJT/kGcz1DzR5L1Fv0bRgnJQ4QQ=="
-                }
-            </textarea>
+                    <textarea id="headers" name="headers" rows="4" cols="50"></textarea>
                 </div>
-
                 <div class="mb-3">
-                <label for="body">Body (JSON):</label>
-                <textarea id="body" name="body" rows="4" cols="50">
-                {
-                    "Grant_type": "password"
-                }
-            </textarea>
-        </div>
-
-                <div class="d-flex justify-content-around">
-                    <button class="btn btn-primary w-25" type="submit" value="Submit" onclick="makeApiCall()">Make API Call</button>
-                    <button id="clearButton" class="btn btn-danger w-25" onclick="clearOutput()">Clear Output</button>
+                    <label for="body">Body (JSON):</label>
+                    <textarea id="body" name="body" rows="4" cols="50"></textarea>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-primary" type="button" onclick="makeApiCall()">Submit</button>
+                    <button id="clearButton" class="btn btn-danger" onclick="clearOutput()">Reset</button>
                 </div>
             </form>
-
-
         </div>
-
-        <div id="response">
-            <b>Response:</b>
+        <div class="myres">
+            <h2>Response:</h2>
+            <div id="response">
+                <div class="spinner-container">
+                    <div class="spinner"></div>
+                </div>
+            </div>
         </div>
     </div>
-
-
-
     <script>
         async function makeApiCall() {
+            console.log('first');
+            // Show spinner container
+            document.querySelector('.spinner-container').style.display = 'block';
+    
             const url = document.getElementById('url').value;
             const method = document.getElementById('method').value;
             const headers = JSON.parse(document.getElementById('headers').value || '{}');
             const body = JSON.parse(document.getElementById('body').value || '{}');
-
+    
             try {
+                // Clear output before making a new API call
+                clearOutput();
+    
                 const response = await axios({ method, url, data: body, headers });
                 console.log('API Response:', response.data);
                 document.getElementById('response').innerText = JSON.stringify(response.data, null, 2);
             } catch (error) {
                 console.error('Error making API call:', error);
-
-                let errorMessage = `Error: ${error.message}`;
-
-                if (error.response) {
-                    errorMessage += `\nStatus: ${error.response.status} ${error.response.statusText}`;
-
-                    if (error.response.data) {
-                        errorMessage += `\nResponse Data: ${JSON.stringify(error.response.data, null, 2)}`;
-                    }
-                } else if (error.request) {
-                    errorMessage += '\nNo response received. Check network connectivity or CORS issues.';
-                } else {
-                    errorMessage += '\nError details not available.';
-                }
-
-                document.getElementById('response').innerText = errorMessage;
+                document.getElementById('response').innerText = `Error: ${error.message}`;
+            } finally {
+                // Hide spinner container
+                document.querySelector('.spinner-container').style.display = 'none';
             }
         }
-
+    
         function clearOutput() {
             document.getElementById('response').innerText = '';
         }
-
-        function formatJson() {
-            const jsonInput = document.getElementById('headers  ').value;
-            try {
-                const parsedJson = JSON.parse(jsonInput);
-                const headers = JSON.stringify(parsedJson, null, 2);
-                document.getElementById('headers').value = headers;
-            } catch (error) {
-                document.getElementById('headers').value = 'Invalid JSON';
-            }
-        }
     </script>
-
-
-
+    
+    
 
 </body>
 
