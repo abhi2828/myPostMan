@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Call Example</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        input{
+            height: 50px;
+            margin: 10px 0;
+        }
+        select{
+            height: 50px;
+            width: 100px;
+            margin: 10px 0;
+        }
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80%;
+        }
+
+        #apiForm {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #response {
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        #clearButton {
+            padding: 10px;
+            background-color: #ccc;
+            cursor: pointer;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+
+    <div id="container">
+        <h1>API Call Example</h1>
+
+        <form id="apiForm">
+            <label for="url">URL:</label>
+            <input type="text" id="url" name="url" required value="https://stgmalhrmsgateway.azurewebsites.net/Authenticate">
+            <br>
+            <label for="method">Method:</label>
+            <select id="method" name="method">
+                <option value="GET">GET</option>
+                <option value="POST">POST</option>
+                <!-- Add other HTTP methods as needed -->
+            </select>
+            <br>
+            <label for="headers">Headers (JSON):</label>
+            <textarea id="headers" name="headers" rows="4" cols="50">
+                {
+                    "token": "a20f0890-68b8-46ff-94c7-536ab2e40d07:kAIc3sHjA8dP8Q5UfzbPH1CvcNMg7v",
+                    "customKey": "D2nGfZbPDVjlvJVK3gRyxZ11EiY2PZRGkLBwyHCEs5MUdLddlWaiokReJXGLJT/kGcz1DzR5L1Fv0bRgnJQ4QQ=="
+                }
+            </textarea>
+            <br>
+            <label for="body">Body (JSON):</label>
+            <textarea id="body" name="body" rows="4" cols="50">
+                {
+                    "Grant_type": "password"
+                }
+            </textarea>
+            <br>
+            <button type="button" onclick="makeApiCall()">Make API Call</button>
+        </form>
+
+        <div id="response"></div>
+
+        <button id="clearButton" onclick="clearOutput()">Clear Output</button>
+    </div>
+
+ 
+
+    <script>
+        async function makeApiCall() {
+            const url = document.getElementById('url').value;
+            const method = document.getElementById('method').value;
+            const headers = JSON.parse(document.getElementById('headers').value || '{}');
+            const body = JSON.parse(document.getElementById('body').value || '{}');
+    
+            try {
+                const response = await axios({ method, url, data: body, headers });
+                console.log('API Response:', response.data);
+                document.getElementById('response').innerText = JSON.stringify(response.data, null, 2);
+            } catch (error) {
+                console.error('Error making API call:', error);
+    
+                let errorMessage = `Error: ${error.message}`;
+    
+                if (error.response) {
+                    errorMessage += `\nStatus: ${error.response.status} ${error.response.statusText}`;
+    
+                    if (error.response.data) {
+                        errorMessage += `\nResponse Data: ${JSON.stringify(error.response.data, null, 2)}`;
+                    }
+                } else if (error.request) {
+                    errorMessage += '\nNo response received. Check network connectivity or CORS issues.';
+                } else {
+                    errorMessage += '\nError details not available.';
+                }
+    
+                document.getElementById('response').innerText = errorMessage;
+            }
+        }
+    
+        function clearOutput() {
+            document.getElementById('response').innerText = '';
+        }
+    </script>
+    
+
+    
+
+</body>
+</html>
